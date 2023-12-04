@@ -1,0 +1,322 @@
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Tính Trọng Lượng</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+    <!-- Thêm thư viện FileSaver.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+	<style>
+  /* Form Responsive CSS */
+  * {
+  box-sizing: border-box;
+}
+
+input[type=text], select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+input[type=number], select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+label {
+  padding: 12px 12px 12px 0;
+  display: inline-block;
+}
+
+input[type=submit] {
+  background-color: #04AA6D;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+.container {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+.col-25 {
+  float: left;
+  width: 25%;
+  margin-top: 6px;
+}
+
+.col-75 {
+  float: left;
+  width: 75%;
+  margin-top: 6px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+  .col-25, .col-75, input[type=submit] {
+    width: 100%;
+    margin-top: 0;
+  }
+}
+/* Table CSS */ 
+ h1{
+  font-size: 30px;
+  color: rgba(2,0,36,1);
+  text-transform: uppercase;
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: 15px;
+}
+table{
+  width:100%;
+  table-layout: fixed;
+  font-family: Arial;
+}
+.tbl-header{
+background: rgb(22,0,362);
+background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+ }
+
+.tbl-content{
+  height:300px;
+  overflow-x:auto;
+  margin-top: 0px;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+th{
+  padding: 20px 15px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 14px;
+  color: #000000;
+  text-transform: uppercase;
+}
+td{
+  padding: 15px;
+  text-align: left;
+  vertical-align:middle;
+  font-weight: 300;
+  font-size: 12px;
+  color: #000000;
+  border-bottom: solid 1px rgba(255,255,255,0.1);
+}
+
+section{
+  margin: 50px;
+}
+
+/* for custom scrollbar for webkit browser*/
+
+::-webkit-scrollbar {
+    width: 6px;
+} 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+} 
+::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+}
+  /* Button CSS */
+  button {
+ border: none;
+ color: #fff;
+ background-image: linear-gradient(30deg, #0400ff, #4ce3f7);
+ border-radius: 20px;
+ background-size: 100% auto;
+ font-family: inherit;
+ font-size: 17px;
+ padding: 0.6em 1.5em;
+}
+
+button:hover {
+ background-position: right center;
+ background-size: 200% auto;
+ -webkit-animation: pulse 2s infinite;
+ animation: pulse512 1.5s infinite;
+}
+
+@keyframes pulse512 {
+ 0% {
+  box-shadow: 0 0 0 0 #05bada66;
+ }
+
+ 70% {
+  box-shadow: 0 0 0 10px rgb(218 103 68 / 0%);
+ }
+
+ 100% {
+  box-shadow: 0 0 0 0 rgb(218 103 68 / 0%);
+ }
+}
+/* Input CSS */
+.input {
+  max-width: 200px;
+  min-height: 40px;
+  padding: 10px;
+  font-family: 'Courier New', Courier, monospace;
+  outline: none;
+  background: #e8e8e8;
+  box-shadow: 5px 5px 17px #c8c8c8,
+             -5px -5px 17px #ffffff;
+  border: none;
+  border-radius: 10px;
+  transition: all .5s;
+}
+
+.input:focus {
+  background: #e8e8e8;
+  box-shadow: inset 5px 5px 17px #c8c8c8,
+            inset -5px -5px 17px #ffffff;
+}
+  </style>
+</head>
+<body>
+    <input type="text" id="mahang" placeholder="Mã hàng" onkeypress="handleKeyPress(event)">
+    <input type="text" id="trongluong" placeholder="Trọng lượng">
+    <button onclick="saveData()">Lưu</button>
+    <button onclick="exportToExcel()">Xuất Excel</button>
+    <button onclick="clearData()">Xóa Dữ Liệu</button>
+
+    <table id="dataDisplay">
+        <tr>
+            <th>Mã Hàng</th>
+            <th>Trọng Lượng</th>
+            <th>Số Lần</th>
+        </tr>
+    </table>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    let data = JSON.parse(localStorage.getItem('data')) || [];
+    
+    document.getElementById('mahang').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // prevent the default action
+            document.getElementById('trongluong').focus();
+        }
+    });
+
+    document.getElementById('trongluong').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // prevent the default action
+            window.saveData();
+        }
+    });
+
+    window.saveData = function() {
+    var mahang = document.getElementById('mahang').value.trim();
+    var trongluongInput = document.getElementById('trongluong').value.trim();
+
+    // Loại bỏ các dấu ngăn cách hàng nghìn (nếu có) và thay thế dấu phẩy bằng dấu chấm
+    trongluongInput = trongluongInput.replace(/,/g, '.'); 
+
+    var trongluong = parseFloat(trongluongInput);
+
+    if (!mahang) {
+        alert('Vui lòng nhập mã hàng');
+        return;
+    }
+
+    if (isNaN(trongluong)) {
+        alert('Vui lòng nhập trọng lượng hợp lệ');
+        return;
+    }
+
+    // Thêm dữ liệu như một object mới trong mảng
+    data.push({ mahang: mahang, trongluong: trongluong, count: 1 });
+
+    updateDisplay();
+    localStorage.setItem('data', JSON.stringify(data));
+
+    document.getElementById('trongluong').value = ''; // Clear the weight after saving
+    document.getElementById('mahang').value = '';
+    document.getElementById('mahang').focus(); // Move focus back to item code
+};
+
+    function updateDisplay() {
+        let display = document.getElementById('dataDisplay');
+        display.innerHTML = "<tr><th>Mã Hàng</th><th>Trọng Lượng</th><th>Số Lần</th></tr>";
+
+        data.forEach((item) => {
+            let row = display.insertRow(-1);
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            let cell3 = row.insertCell(2);
+            cell1.innerHTML = item.mahang;
+            cell2.innerHTML = item.trongluong.toFixed(3).replace('.', ',');
+            cell3.innerHTML = item.count;
+        });
+    }
+    window.exportToExcel = function() {
+    try {
+        let wb = XLSX.utils.book_new(); // Create a new workbook
+        wb.Props = {
+            Title: "Dữ Liệu Trọng Lượng",
+            Subject: "Export",
+            Author: "WebApp",
+            CreatedDate: new Date()
+        };
+
+        wb.SheetNames.push("Dữ Liệu"); // Add a new sheet to the workbook
+        let ws_data = [['Mã Hàng', 'Trọng Lượng', 'Số Lần']]; // This will be our header row
+
+        for (let mahang in data) {
+            if (data.hasOwnProperty(mahang)) {
+                ws_data.push([mahang, data[mahang].trongluong, data[mahang].count]); // Push each row into the sheet data array
+            }
+        }
+
+        let ws = XLSX.utils.aoa_to_sheet(ws_data); // Create a worksheet with the header and data
+        wb.Sheets["Dữ Liệu"] = ws; // Add the worksheet to our workbook
+
+        let wbout = XLSX.write(wb, {bookType:'xlsx', type: 'binary'}); // Write the workbook in binary format
+
+        function s2ab(s) { // Convert s to Array Buffer
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'DuLieuTrongLuong.xlsx'); // Use FileSaver to save the generated file
+    } catch(e) {
+        console.error(e);
+        alert('An error occurred while exporting to Excel');
+    }
+};
+
+    window.clearData = function() {
+        if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu không?')) {
+            localStorage.removeItem('data');
+            data = {};
+            updateDisplay();
+        }
+    };
+
+    updateDisplay();
+});
+
+
+	</script>
+</body>
+</html>
